@@ -1,11 +1,12 @@
 %{
-    #include "y.tab.h"
-	 #include <stdlib.h>
 	 #include <stdio.h>
+	 #include <stdlib.h>
     void yyerror(char *);
+    #include "y.tab.h"
+     int yylineno;
 %}
 
-%%
+%% 
 
 "const"                        return CONSTANT;
 "+"						       return PLUS;
@@ -62,11 +63,11 @@
 [a-zA-z][_a-zA-z0-9]*          return VARIABLE;
 [0-9]+											{yylval = atoi(yytext); return INTEGERNUMBER;}
 [0-9]+\.[0-9]+									{yylval = atof(yytext); return FLOATNUMBER;}
-\".*\"											{yylval=yytext;return TEXT;} // for copying the i/p token
-\'.?\'											{yylval=yytext;return CHARACTER;}
+\".*\"											return TEXT; // for copying the i/p token
+\'.?\'											return CHARACTER;
 [\t\n]+											/* ignore whitespace and newline */;
 .                                               {yyerror("UnExpectedToken");}
-%%
+%% 
 
 int yywrap(void) {
     return 1;

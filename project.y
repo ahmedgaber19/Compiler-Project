@@ -1,4 +1,4 @@
-%token CONSTANT INCREMENT DECREMENT PLUSE MINUSE MULE DIVE IF ELSE WHILE DO FOR BREAK CONTINUE SWITCH CASE DEFAULT COLON OPENBRACE CLOSEBRACE RETURN VOID OPENBRACKET CLOSEBRACKET COMMA BOOLEAN INTEGER FLOAT DOUBLE LONG CHAR STRING TRUE FALSE SEMICOLON VARIABLE INTEGERNUMBER FLOATNUMBER TEXT CHARACTER
+%token CONSTANT INCREMENT DECREMENT PLUSE MINUSE MULE DIVE IF ELSE WHILE DO FOR BREAK SWITCH CASE DEFAULT COLON OPENBRACE CLOSEBRACE RETURN OPENBRACKET CLOSEBRACKET COMMA BOOLEAN INTEGER FLOAT DOUBLE LONG CHAR STRING SEMICOLON VARIABLE INTEGERNUMBER FLOATNUMBER TEXT CHARACTER VOID TRUE FALSE CONTINUE
 
 %right ASSIGN EE
 %left GREATERTHAN LESSTHAN GREATERE LESSE NOTE AND OR NOT
@@ -49,7 +49,7 @@ stmt:
 
         | SWITCH OPENBRACKET VARIABLE CLOSEBRACE OPENBRACE caseExpression CLOSEBRACE      {printf("Switch case\n");}
         
-        | functionType VARIABLE OPENBRACKET functionArguments CLOSEBRACKET OPENBRACE stmt_list RETURN expr SEMICOLON CLOSEBRACE {printf("function\n");}
+        | type VARIABLE OPENBRACKET functionArguments CLOSEBRACKET OPENBRACE stmt_list RETURN expr SEMICOLON CLOSEBRACE {printf("function\n");}
 
         ;
 
@@ -68,10 +68,9 @@ functionArguments:
     |
     ;
 
-functionType:
-    VOID
-    | type
-    ;    
+
+  
+
 
 expr:
         INTEGERNUMBER                   { $$ =$1; }
@@ -85,8 +84,8 @@ expr:
         | expr REMAINDER expr           { $$ = $1 % $3; }
 		| expr POWER expr               { $$ = $1 ^ $3; }
         | boolexprs 
-        | assignmentoperator
         ;
+
 boolexprs:
         expr AND expr                   { $$ = $1 && $3; }
 		| expr OR expr                  { $$ = $1 || $3; }
@@ -99,11 +98,11 @@ boolexprs:
         | expr EE expr                  { $$ = $1 == $3;  }
         ;
 
-        
+
 
 assignmentoperator:
         VARIABLE  INCREMENT                 { $$ = $1+1; }
-		| VARIABLE DECREMENT                { $$ = $1+1; }
+		| VARIABLE DECREMENT                { $$ = $1-1; }
 		| VARIABLE PLUSE expr               { $1 = $1+$3; }
 		| VARIABLE MINUSE expr              { $1 = $1-$3; }
 		| VARIABLE MULE expr                { $1 = $1*$3; }
@@ -147,9 +146,9 @@ void yyerror(char *s) {
 }
 
 int main(void) {
-     yyin = fopen("test.txt", "r");
+    yyin = fopen("test.txt", "r");
 	f1=fopen("output.txt","w");
-	
+	fprintf(f1,"I can not parse");
    if(!yyparse())
 	{
 		printf("\nParsing complete\n");
@@ -157,6 +156,7 @@ int main(void) {
 	}
 	else
 	{
+		fprintf(f1,"I can not parse");
 		printf("\nParsing failed\n");
 		return 0;
 	}
