@@ -45,7 +45,6 @@
 "{"                            return OPENBRACE;
 "}"                            return CLOSEBRACE;
 "return"                       return RETURN;
-"void"                         return VOID;
 "("                            return OPENBRACKET;
 ")"                            return CLOSEBRACKET;
 ","                            return COMMA;
@@ -65,7 +64,8 @@
 [0-9]+\.[0-9]+									{yylval = atof(yytext); return FLOATNUMBER;}
 \".*\"											return TEXT; // for copying the i/p token
 \'.?\'											return CHARACTER;
-[\t\n]+											/* ignore whitespace and newline */;
+[ \t]+											/* ignore whitespace and newline */;
+\n                                              {yylineno++;}
 .                                               {yyerror("UnExpectedToken");}
 %% 
 

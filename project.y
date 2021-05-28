@@ -1,4 +1,4 @@
-%token CONSTANT INCREMENT DECREMENT PLUSE MINUSE MULE DIVE IF ELSE WHILE DO FOR BREAK SWITCH CASE DEFAULT COLON OPENBRACE CLOSEBRACE RETURN OPENBRACKET CLOSEBRACKET COMMA BOOLEAN INTEGER FLOAT DOUBLE LONG CHAR STRING SEMICOLON VARIABLE INTEGERNUMBER FLOATNUMBER TEXT CHARACTER VOID TRUE FALSE CONTINUE
+%token CONSTANT INCREMENT DECREMENT PLUSE MINUSE MULE DIVE IF ELSE WHILE DO FOR BREAK SWITCH CASE DEFAULT COLON OPENBRACE CLOSEBRACE RETURN OPENBRACKET CLOSEBRACKET COMMA BOOLEAN INTEGER FLOAT DOUBLE LONG CHAR STRING SEMICOLON VARIABLE INTEGERNUMBER FLOATNUMBER TEXT CHARACTER TRUE FALSE CONTINUE
 
 %right ASSIGN EE
 %left GREATERTHAN LESSTHAN GREATERE LESSE NOTE AND OR NOT
@@ -11,8 +11,10 @@
 
 
 
+
 %{
     #include <stdio.h>
+    int yydebug = 1;
     void yyerror(char *);
     int yylex(void);
 	FILE * yyin;
@@ -23,7 +25,7 @@
 %%
 
 program:
-        stmt               
+        stmt_list               
         ;
 
 stmt:
@@ -45,13 +47,31 @@ stmt:
 
         | assignmentoperator SEMICOLON                                                              {printf("Increments\n");}
         
-        | FOR OPENBRACKET INTEGER VARIABLE ASSIGN INTEGERNUMBER SEMICOLON boolexprs SEMICOLON for_increment CLOSEBRACKET  blockscope	 {printf("For loop\n");}
-
-        | SWITCH OPENBRACKET VARIABLE CLOSEBRACE OPENBRACE caseExpression CLOSEBRACE      {printf("Switch case\n");}
+        | FOR OPENBRACKET foriterator SEMICOLON boolexprs SEMICOLON assignmentoperator CLOSEBRACKET  blockscope	 {printf("For loop\n");}
         
-        | type VARIABLE OPENBRACKET functionArguments CLOSEBRACKET OPENBRACE stmt_list RETURN expr SEMICOLON CLOSEBRACE {printf("function\n");}
+        | SWITCH OPENBRACKET VARIABLE CLOSEBRACKET OPENBRACE caseExpression CLOSEBRACE      {printf("Switch case\n");}
+        
+        | type VARIABLE OPENBRACKET functionArguments CLOSEBRACKET OPENBRACE insidefn RETURN expr SEMICOLON CLOSEBRACE {printf("function\n");}
+        
+        | callfn
+        
+        ;
+
+callfn:   type VARIABLE ASSIGN VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
+        | VARIABLE ASSIGN VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
+        | VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
 
         ;
+
+callfnarg1:   VARIABLE
+            | INTEGERNUMBER                   
+            | FLOATNUMBER
+            | CHARACTER
+            | TEXT;
+callfnarg: callfnarg1
+         | callfnarg1 COMMA callfnarg
+         
+    ;
 
 type: INTEGER
 	| FLOAT
@@ -61,20 +81,26 @@ type: INTEGER
 	| STRING
 	| BOOLEAN
 	;
+foriterator:  INTEGER VARIABLE ASSIGN INTEGERNUMBER
+            | VARIABLE ASSIGN INTEGERNUMBER
+            | VARIABLE
+            | assignmentoperator
+            ;
 
-functionArguments:
-    type VARIABLE
-    | type VARIABLE COMMA functionArguments
-    |
-    ;
+
+functionArguments:  type VARIABLE
+                  | type VARIABLE COMMA functionArguments
+                  |
+                  ;
 
 
   
 
-
 expr:
-        INTEGERNUMBER                   { $$ =$1; }
-        | VARIABLE                      { $$ =$1; }
+        INTEGERNUMBER                   
+        | FLOATNUMBER
+        | CHARACTER
+        | TEXT                    
         | MINUS expr %prec UMINUS       { $$ = -$2; }
         | expr PLUS expr                { $$ = $1 + $3; }
         | expr MINUS expr               { $$ = $1 - $3; }
@@ -83,7 +109,7 @@ expr:
         | OPENBRACKET expr CLOSEBRACKET { $$ = $2; }
         | expr REMAINDER expr           { $$ = $1 % $3; }
 		| expr POWER expr               { $$ = $1 ^ $3; }
-        | boolexprs 
+        | boolexprs
         ;
 
 boolexprs:
@@ -96,6 +122,9 @@ boolexprs:
         | expr LESSE expr               { $$ = $1 <= $3; }
         | expr NOTE expr                { $$ = $1 != $3; }
         | expr EE expr                  { $$ = $1 == $3;  }
+        | VARIABLE 
+        | TRUE
+        | FALSE
         ;
 
 
@@ -109,20 +138,25 @@ assignmentoperator:
 		| VARIABLE DIVE expr                { $1 = $1/$3; }
 		;
 
-for_increment:
-        assignmentoperator
-        | VARIABLE ASSIGN expr  
-        ;
 
 
 blockscope:	
-            OPENBRACE stmt_list CLOSEBRACE	{printf("Stmt brace\n");}
-			| OPENBRACE CLOSEBRACE	
+              OPENBRACE stmt_list CLOSEBRACE	{printf("Stmt brace\n");}
+			| OPENBRACE CLOSEBRACE
+            | OPENBRACE insidefn CONTINUE SEMICOLON insidefn CLOSEBRACE
+            | OPENBRACE insidefn BREAK SEMICOLON insidefn CLOSEBRACE
+            | OPENBRACE insidefn RETURN SEMICOLON insidefn CLOSEBRACE
+            |
+            
 		    ;
+
+insidefn: stmt_list
+            |
+             ;
 
 stmt_list:
         stmt                 
-        | stmt_list stmt        
+        | stmt_list stmt 
         ;
 
 caseExpression:	
@@ -148,7 +182,6 @@ void yyerror(char *s) {
 int main(void) {
     yyin = fopen("test.txt", "r");
 	f1=fopen("output.txt","w");
-	fprintf(f1,"I can not parse");
    if(!yyparse())
 	{
 		printf("\nParsing complete\n");
