@@ -18,7 +18,6 @@
     void yyerror(char *);
     int yylex(void);
 	FILE * yyin;
-    FILE * f1;
     int sym[26];
 %}
 
@@ -148,7 +147,7 @@ assignmentoperator:
 
 
 blockscope:	
-              OPENBRACE stmt_list CLOSEBRACE	{printf("Stmt brace\n");}
+              OPENBRACE stmt_list CLOSEBRACE
 			| OPENBRACE CLOSEBRACE
 		    ;
 
@@ -179,19 +178,15 @@ void yyerror(char *s) {
 
 int main(void) {
     yyin = fopen("test.txt", "r");
-	f1=fopen("output.txt","w");
    if(!yyparse())
 	{
 		printf("\nParsing complete\n");
-		fprintf(f1,"hello there");
 	}
 	else
 	{
-		fprintf(f1,"I can not parse");
 		printf("\nParsing failed\n");
 		return 0;
 	}
 	fclose(yyin);
-	fclose(f1);
     return 0;
 }
