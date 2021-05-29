@@ -51,15 +51,22 @@ stmt:
         
         | SWITCH OPENBRACKET VARIABLE CLOSEBRACKET OPENBRACE caseExpression CLOSEBRACE      {printf("Switch case\n");}
         
-        | type VARIABLE OPENBRACKET functionArguments CLOSEBRACKET OPENBRACE insidefn RETURN expr SEMICOLON CLOSEBRACE {printf("function\n");}
+        | type VARIABLE OPENBRACKET functionArguments CLOSEBRACKET blockscope {printf("function\n");}
         
         | callfn
+
+        | RETURN expr SEMICOLON
+
+        | BREAK SEMICOLON
+
+        | CONTINUE SEMICOLON
         
         ;
 
 callfn:   type VARIABLE ASSIGN VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
         | VARIABLE ASSIGN VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
         | VARIABLE OPENBRACKET callfnarg CLOSEBRACKET SEMICOLON
+        | VARIABLE OPENBRACKET CLOSEBRACKET SEMICOLON
 
         ;
 
@@ -143,16 +150,7 @@ assignmentoperator:
 blockscope:	
               OPENBRACE stmt_list CLOSEBRACE	{printf("Stmt brace\n");}
 			| OPENBRACE CLOSEBRACE
-            | OPENBRACE insidefn CONTINUE SEMICOLON insidefn CLOSEBRACE
-            | OPENBRACE insidefn BREAK SEMICOLON insidefn CLOSEBRACE
-            | OPENBRACE insidefn RETURN SEMICOLON insidefn CLOSEBRACE
-            |
-            
 		    ;
-
-insidefn: stmt_list
-            |
-             ;
 
 stmt_list:
         stmt                 
